@@ -1,221 +1,151 @@
-# GIA - Gender and Development Center Information Assistant
+# GIA: Gender and Development Center Information Assistant
 
-GIA is an AI-powered data analytics platform for MSU-IIT GADC that provides intelligent insights into student enrollment, engagement, employee information, attendance, and events data.
+GIA is a web-based, AI-powered information assistant for the **Gender and Development Center (GADC)** of **Mindanao State University - Iligan Institute of Technology (MSU-IIT)**. It lets GADC staff query sex-disaggregated data (SDD) on students, employees, and events using plain language, and pairs the chat assistant with dashboards, event management tools, and a public analytics portal.
 
-## 🚀 Features
+Developed as a capstone project by Andrei G. Raagas.
 
-- **Student Enrollment Analytics**: Comprehensive visualizations with 11 charts covering demographics, socioeconomic distribution, disability types, and indigenous communities
-- **AI-Powered Chat**: Natural language queries with intelligent data analysis using Groq's LLaMA 3.3 70B model
-- **Event Management**: QR-based attendance tracking, poster generation, and analytics
-- **Data Upload**: Excel-based data import with strict validation
-- **Period Management**: Semester-based tracking for Student Enrollment (2024-2025 1st Semester format)
+## Features
 
-## 📋 Prerequisites
+### AI Chat Assistant
+- Ask questions in natural language, such as enrollment by college, sex breakdowns, vulnerability indicators (PWD, solo parent, first-generation learner, indigenous), and event attendance
+- Answers arrive as structured text, markdown tables, and on-the-fly charts
+- Prompt-augmented design: each query is parsed into a structured intent, matched against live Firestore data, and answered under a dual-layer prompt (a permanent system prompt plus response rules that keep answers faithful to the data)
+- Powered by the Groq API (`qwen/qwen3-32b`)
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Firebase account (for database)
-- Groq API key (for AI chat functionality)
+### Data Distribution
+- Visual dashboards for student enrollment and employee information
+- Excel upload for enrollment and employment data with validation
+- Report generation (PDF and Word) with MSU-IIT header and footer
 
-## 🔧 Installation
+### Event Management
+- Create, edit, submit, and withdraw events (draft and review workflow)
+- QR-based attendance with session QR management
+- Public event listing and public registration form
+- Event poster generator, printable attendance sheets, and report exporter
+- Event analytics with sex-disaggregated attendance
 
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd project-gia
+### Public Portal
+- Read-only analytics for the public, without requiring a login
+
+### Access Control
+- Firebase Authentication with three roles: **User**, **Secretariat**, and **Admin**
+- Role-based permissions for chat, data viewing, data import and deletion, event handling, and user management
+- Admin-only user creation and role assignment
+
+## System Overview
+
+The pipeline and response rules are documented in the diagrams included in this repository:
+
+- `GIA_pipeline_flowchart.svg`: end-to-end query pipeline
+- `GIA_response_rules.svg`: response rules applied to model output
+
+## Tech Stack
+
+- **Frontend:** React 19, Vite, Tailwind CSS, React Router, Recharts, Chart.js, Lucide
+- **AI:** Groq API (Qwen3 32B), with the system prompt stored in `backend/prompt.txt`
+- **Backend:** Node.js and Express (local), Vercel serverless functions (deployment)
+- **Database and Auth:** Firebase (Cloud Firestore and Authentication)
+- **Documents and Data:** docx, jsPDF, html2canvas, SheetJS (xlsx), PapaParse, qrcode
+
+## Project Structure
+
+```
+.
+├── api/                  Vercel serverless functions (chat, parse-intent)
+├── backend/              Local Express server and system prompt (prompt.txt)
+├── firebase/             Firebase config, auth, and Firestore services
+├── public/               Logos, report header and footer images
+├── src/
+│   ├── components/       Chat, events, excel upload, and visuals components
+│   ├── contexts/         Role and permission context
+│   ├── pages/            Chat, Distribution, Events, Public Portal, Users, About
+│   ├── services/         AI service (intent parsing and data context)
+│   └── utils/            Demo data seeding
+├── firestore.rules       Firestore security rules
+├── vercel.json           Vercel configuration
+└── package.json
 ```
 
-### 2. Install dependencies
+## Getting Started
 
-**Frontend:**
+### Prerequisites
+
+- Node.js 18 or higher
+- A Firebase project with Authentication (Email/Password) and Cloud Firestore enabled
+- A Groq API key from [console.groq.com/keys](https://console.groq.com/keys)
+
+### Installation
+
 ```bash
+git clone https://github.com/ycon4/MSUIIT-GADC-Information-Assistant.git
+cd MSUIIT-GADC-Information-Assistant
+
+# Frontend dependencies
 npm install
-```
 
-**Backend:**
-```bash
+# Backend dependencies
 cd backend
 npm install
 cd ..
 ```
 
-### 3. Configure Environment Variables
+### Environment Variables
 
-Create a `.env` file in the `project-gia` directory:
+Create a `.env` file in the project root:
 
 ```env
-# GIA Backend Configuration
-# Get your API key from: https://console.groq.com/keys
-
 GROQ_API_KEY=your_groq_api_key_here
 PORT=3001
 ```
 
-**To get your Groq API key:**
-1. Visit [https://console.groq.com/keys](https://console.groq.com/keys)
-2. Sign up or log in
-3. Create a new API key
-4. Copy and paste it into the `.env` file
+### Firebase Setup
 
-### 4. Configure Firebase
+1. Replace the values in `firebase/config.js` with your own Firebase project settings.
+2. Deploy the security rules in `firestore.rules` to your project.
+3. Create your first user in Firebase Authentication, then add a matching document in the `users` collection with a `role` field (`ADMIN`, `SECRETARIAT`, or `USER`).
 
-Update `firebase/config.js` with your Firebase credentials:
+The app reads and writes these Firestore collections: `student_enrollment`, `employee_information`, `events`, `attendance`, and `users`.
 
-```javascript
-const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-auth-domain",
-  projectId: "your-project-id",
-  storageBucket: "your-storage-bucket",
-  messagingSenderId: "your-messaging-sender-id",
-  appId: "your-app-id"
-};
-```
+### Running Locally
 
-## 🏃 Running the Application
+Run the backend and the frontend in separate terminals.
 
-You need to run **both** the frontend and backend servers:
-
-### Terminal 1 - Backend Server
 ```bash
+# Terminal 1: backend (http://localhost:3001)
 cd backend
 npm start
-```
 
-The backend will start on `http://localhost:3001`
-
-### Terminal 2 - Frontend Development Server
-```bash
+# Terminal 2: frontend (http://localhost:5173)
 npm run dev
 ```
 
-The frontend will start on `http://localhost:5173`
+Check that the backend is up: `http://localhost:3001/api/health`
 
-## 💬 Chat Functionality
-
-The chat feature supports various types of queries:
-
-### Basic Queries
-- "How many students are enrolled?"
-- "Show me enrollment by college"
-- "What is the total enrollment in COE?"
-
-### Gender Breakdown
-- "Show male and female distribution in CSM"
-- "Gender breakdown by college"
-
-### Vulnerability Indicators
-- "How many PWD students are there?"
-- "Students with solo parents in CEBA"
-- "First generation learners by college"
-- "Indigenous students in CCS"
-
-### Comparisons
-- "Compare enrollment between COE and CCS"
-- "Year-over-year enrollment trends"
-- "2023-2024 vs 2024-2025 enrollment"
-
-### Multi-Condition Queries
-- "PWD students in CEBA with solo parent households"
-- "Working students who are first generation learners"
-
-## 📊 Data Management
-
-### Student Enrollment Upload
-
-**Required Columns (18):**
-- `studid`, `studgender`, `preferred_pronouns`, `studlegstatus`
-- `studreligion`, `studethnic`, `currentadd_country`
-- `is_child_solo_parent`, `is_indigenous`, `indigenous_group`
-- `is_child_pdl`, `is_child_lgbtq`, `is_first_gen_learner`
-- `is_pwd`, `pwd_aspect`, `stud_program`, `stud_college`, `stud_yrlevel`
-
-**Period Format:**
-- Semester-based: "2024-2025 1st Semester" or "2024-2025 2nd Semester"
-- Only 1st and 2nd Semester (no Summer option)
-
-### Features
-- **Duplicate Detection**: Automatically detects existing student IDs
-- **Append/Replace Modes**: Choose to add new records or replace existing data
-- **Validation**: Strict column validation before upload
-- **Modify Period**: Bulk update academic periods with dropdown suggestions
-- **Delete Period**: Remove entire datasets with type-to-confirm protection
-
-## 🎨 Design System
-
-### Color Scheme (Gender-Neutral)
-- **Male**: `#14b8a6` (Teal)
-- **Female**: `#f59e0b` (Amber)
-- **Primary (GIA)**: Purple gradient
-
-### Charts
-- 11 comprehensive charts in Student Enrollment
-- Dynamic charts in chat with matching color scheme
-- Responsive design with empty state handling
-
-## 🔒 Security & Privacy
-
-- No individual record editing (data integrity from MSU-IIT database)
-- No export functionality (prevents unauthorized data extraction)
-- Type-to-confirm deletion (must type "DELETE")
-- Firebase authentication required
-
-## 🛠️ Troubleshooting
-
-### Chat not working?
-
-1. **Check if backend is running:**
-   ```bash
-   curl http://localhost:3001/api/health
-   ```
-   Should return: `{"status":"ok","message":"GIA backend is running!"}`
-
-2. **Verify GROQ_API_KEY is set:**
-   - Check `.env` file in `project-gia` directory
-   - Ensure the key is valid (test at [https://console.groq.com](https://console.groq.com))
-
-3. **Check browser console:**
-   - Open DevTools (F12)
-   - Look for error messages in Console tab
-   - Common errors:
-     - `Failed to fetch` → Backend not running
-     - `401 Unauthorized` → Invalid API key
-     - `429 Too Many Requests` → Rate limit exceeded
-
-4. **Restart both servers:**
-   - Stop both frontend and backend (Ctrl+C)
-   - Start backend first, then frontend
-
-### Port already in use?
-
-If port 3001 is already in use, change it in `.env`:
-```env
-PORT=3002
-```
-
-Then update `src/services/aiService.js`:
-```javascript
-const API_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-  ? 'http://localhost:3002/api/chat'  // Update port here
-  : '/api/chat';
-```
-
-## 📦 Build for Production
+### Build for Production
 
 ```bash
 npm run build
 ```
 
-The production build will be in the `dist` directory.
+The output is written to `dist/`.
 
-## 🤝 Contributing
+### Deployment
 
-This project is maintained by MSU-IIT GADC. For questions or issues, contact the development team.
+The project is set up for **Vercel**. The `api/` folder is deployed as serverless functions, and `vercel.json` rewrites all other routes to the single-page app. Add `GROQ_API_KEY` as an environment variable in your Vercel project settings.
 
-## 📄 License
+## Additional Documentation
 
-Proprietary - MSU-IIT Gender and Development Center
+- `VERIFICATION_CHECKLIST.md`: steps for verifying the Firebase read-quota fixes (data caching and pagination)
+- `MSUIIT_CHART_THEME.md`: the MSU-IIT maroon and gold chart theme
 
----
+## Data Privacy
 
-**Note**: This system handles sensitive student data. Ensure all security protocols are followed and access is restricted to authorized personnel only.
+GIA works with student and employee records. Limit access to authorized GADC personnel, keep API keys out of version control, and review `firestore.rules` before deploying to a real environment.
+
+## Authors
+
+
+Andrei G. Raagas
+Marhamah Ali
+Sittie Hanifa D. Yusoph
+BS Information Technology, MSU-IIT
